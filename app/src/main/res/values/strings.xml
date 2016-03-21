@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Spotify Streamer</string>
+    <string name="action_settings">Settings</string>
+    <string name="api_key" translatable="false">e9765cdaec32ef98359d76b588d6f17b</string>
+    <string name="title_activity_detail">Details</string>
+    <string name="settings">Settings</string>
+    <string name="pref_general_title">Sort By</string>
+    <string name="pref_general_key">sort_by</string>
+    <string name="about">About</string>
+    <string-array name="pref_general_entries">
+        <item>Popularity</item>
+        <item>Rating</item>
+    </string-array>
+    <string-array name="pref_general_entryValues">
+        <item>popularity</item>
+        <item>vote_average</item>
+    </string-array>
+    <string name="popularity">popularity</string>
+    <string name="pref_general_summary">Sort the movies by choosing a category</string>
+</resources>
