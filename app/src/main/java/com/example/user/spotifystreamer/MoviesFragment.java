@@ -1,5 +1,6 @@
 package com.example.user.spotifystreamer;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -23,6 +24,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.user.spotifystreamer.data.MovieDbHelper;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -40,29 +42,93 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A placeholder fragment which contains the gridview of movies.
+ * A placeholder fragment which contains the Grid View of movies.
  */
 public class MoviesFragment extends Fragment {
+
     String BASE_URL = "http://api.themoviedb.org/3/discover/movie"; //base url to retrieve json data.
-    String[] poster_path;
-    ArrayList<String> thumbnail = new ArrayList<>();
-    ArrayList<String> plot = new ArrayList<>();
-    ArrayList<String> user_rating = new ArrayList<>();
-    ArrayList<String> release_date = new ArrayList<>();
-    ArrayList<String> title = new ArrayList<>();
+    ArrayList<Movie> movies ;
+    private static final String TAG= "jinal";
     ImageAdapter mMovieAdapter;
+
+
+    /*The Callback interface which all activities hosting this fragment will implement
+     *to get notified about the list items been selected.
+     */
+    public interface Callback{
+        //When an item has been selected
+        public void onItemSelected(Movie movie);
+    }
 
     public MoviesFragment() {
     }
 
     public void onCreate(Bundle savedInstanceState) {
+        Log.v(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
     }
 
-    public void onStart() {
+    public void onPreferenceChanged(String sort_by){
+        Log.v(TAG, "PREFERENCE CHANGED");
+        movies.clear();
+        if(sort_by.equals(getString(R.string.favorites))){
+            fetchFavorites();
+        }
+        else{
+            if(isNetworkAvailable()) {
+                FetchMovieTask movieTask = new FetchMovieTask();
+                movieTask.execute(sort_by);
+            }
+            else
+                Toast.makeText(getContext(), "No Connection!\nCheck your Internet Connection",
+                        Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        Log.v(TAG, "onAttach");
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        Log.v(TAG, "onDetach");
+    }
+
+    public void onStart()
+    {
         super.onStart();
-        updateMovie();
+        Log.v(TAG, "onStart");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.v(TAG, "onPause");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.v(TAG, "onStop");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.v(TAG, "onDestroy");
+    }
+
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList("movies", movies);
+        super.onSaveInstanceState(outState);
+        Log.v(TAG, "onSaveInstanceState");
+
     }
 
     private boolean isNetworkAvailable() {
@@ -88,48 +154,77 @@ public class MoviesFragment extends Fragment {
         }
         return super.onOptionsItemSelected(item);
     }
+    public void onResume(){
+        Log.v(TAG,"onResume");
+        //updateMovie();
+        super.onResume();
+    }
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mMovieAdapter = new ImageAdapter(getActivity());
+        Log.v(TAG, "onCreateView");
+        if (savedInstanceState == null || !savedInstanceState.containsKey("movies")) {
+            movies=new ArrayList<Movie>();
+            mMovieAdapter = new ImageAdapter(getActivity(), movies);
+            updateMovie();
+        } else {
+           movies = savedInstanceState.getParcelableArrayList("movies");
+            mMovieAdapter = new ImageAdapter(getActivity(), movies);
+
+        }
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         GridView movies_gridview = (GridView) rootView.findViewById(R.id.movies_gridview);
         movies_gridview.setAdapter(mMovieAdapter);
         movies_gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getActivity(), DetailActivity.class);
-                intent.putExtra("TITLE", title.get(position));//send title
-                intent.putExtra("PLOT", plot.get(position));//send overview
-                intent.putExtra("RATING", user_rating.get(position));//send user-rating
-                intent.putExtra("IMAGE", thumbnail.get(position));
-                intent.putExtra("release-date", release_date.get(position));//send release date
-                startActivity(intent);
+                ((Callback)getActivity()).onItemSelected(movies.get(position));
+
             }
         });
+
         return rootView;
     }
 
-    public void updateMovie() {
+    private void updateMovie() {
         if (isNetworkAvailable()) {
-            FetchMovieTask movieTask = new FetchMovieTask();
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
             String sort_by = prefs.getString(getString(R.string.pref_general_key), getString(R.string.popularity));
-            title.clear();
-            thumbnail.clear();
-            plot.clear();
-            release_date.clear();
-            user_rating.clear();
-            movieTask.execute(sort_by);
+            movies.clear();
+            if(sort_by.equals(getString(R.string.favorites))){
+                fetchFavorites();
+            }
+            else{
+                FetchMovieTask movieTask = new FetchMovieTask();
+                movieTask.execute(sort_by);
+            }
         } else {
             Toast.makeText(getContext(), "No Connection!\nCheck your Internet Connection", Toast.LENGTH_LONG).show();
         }
     }
 
+    protected void fetchFavorites() {
+        MovieDbHelper db = new MovieDbHelper(getContext());
+        ArrayList<Movie> movieDetails = db.getAllMovies();
+        int n=movieDetails.size();
+        if (n > 0) {
+            movies = movieDetails;
+            String[] poster_paths=new String[n];
+            for(int i=0;i<n;i++)
+                poster_paths[i]=movies.get(i).poster_path;
+            mMovieAdapter.replace(poster_paths);
+        }
+        else {
+            Toast.makeText(getActivity(), "No Favourites Added!", Toast.LENGTH_LONG).show();
+        }
+    }
+
+
     class FetchMovieTask extends AsyncTask<String, Void, String[]> {
         String json_str = null;
-        String TAG = this.getClass().getSimpleName();
+        final String TAG = this.getClass().getSimpleName();
+        String[] poster_path;
 
         public String[] doInBackground(String... param) {
             HttpURLConnection urlConnection = null;
@@ -149,7 +244,7 @@ public class MoviesFragment extends Fragment {
                 urlConnection.connect();
                 // Read the input stream into a String
                 InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder buffer = new StringBuilder();
                 if (inputStream == null) {
                     // Nothing to do.
                     return null;
@@ -206,20 +301,25 @@ public class MoviesFragment extends Fragment {
             final String USER_RATING = "vote_average";
             final String image_path = "backdrop_path";
             final String IMAGE_URL = "http://image.tmdb.org/t/p/w342/";
+            final String ID = "id";
             JSONObject jsonObject = new JSONObject(str);
             JSONArray movieArray = jsonObject.getJSONArray(MOVIEDB_RESULT);
             String[] resultList = new String[movieArray.length()];
             for (int i = 0; i < movieArray.length(); i++) {
+                movies.add(new Movie());
+                Movie present_movie = movies.get(i);
                 JSONObject movie_obj = movieArray.getJSONObject(i);
                 resultList[i] = IMAGE_URL + movie_obj.getString(MOVIEDB_POSTER_PATH);
-                plot.add(movie_obj.getString(OVERVIEW));
+                present_movie.poster_path = resultList[i];
+                present_movie.plot = (movie_obj.getString(OVERVIEW));
                 if (!movie_obj.getString(image_path).endsWith(".jpg")) {
-                    thumbnail.add(resultList[i]);
+                    present_movie.thumbnail = (resultList[i]);
                 } else
-                    thumbnail.add(IMAGE_URL + movie_obj.getString(image_path));
-                release_date.add(movie_obj.getString(RELEASE_DATE));
-                user_rating.add(movie_obj.getString(USER_RATING));
-                title.add(movie_obj.getString(MOVIEDB_TITLE));
+                    present_movie.thumbnail = (IMAGE_URL + movie_obj.getString(image_path));
+                present_movie.release_date = movie_obj.getString(RELEASE_DATE);
+                present_movie.user_rating = movie_obj.getString(USER_RATING);
+                present_movie.title = movie_obj.getString(MOVIEDB_TITLE);
+                present_movie.movie_id = movie_obj.getString(ID);
             }
             return resultList;
         }
@@ -227,11 +327,15 @@ public class MoviesFragment extends Fragment {
 
     public class ImageAdapter extends BaseAdapter {
         private Context context;
-        private List<String> urls = new ArrayList<String>();
+        private List<String> urls = new ArrayList<>();
 
         //constructor
-        public ImageAdapter(Context context) {
+        public ImageAdapter(Context context, ArrayList<Movie> movie_list) {
             this.context = context;
+            if (!movie_list.isEmpty()) {
+                for (int i = 0; i < movie_list.size(); i++)
+                    urls.add(movie_list.get(i).poster_path);
+            }
         }
 
         @Override
@@ -247,10 +351,6 @@ public class MoviesFragment extends Fragment {
         @Override
         public long getItemId(int position) {
             return position;
-        }
-
-        public void clear() {
-            this.urls.clear();
         }
 
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -269,7 +369,7 @@ public class MoviesFragment extends Fragment {
             if (!urls.isEmpty())
                 this.urls.clear();
             Collections.addAll(urls, paths);
-            notifyDataSetChanged();
+            this.notifyDataSetChanged();
         }
     }
 }

@@ -9,10 +9,7 @@
             android:id="@+id/movies_gridview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:numColumns="@integer/columns"
-            android:gravity="center"
-            android:clipChildren="true"
-            android:stretchMode="columnWidth"
-            android:adjustViewBounds="true"
+            style="@style/PosterGridStyle"/>
             />
+
 </FrameLayout>

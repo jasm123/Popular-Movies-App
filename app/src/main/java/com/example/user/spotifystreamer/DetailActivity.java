@@ -1,33 +1,38 @@
 package com.example.user.spotifystreamer;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
+import android.util.Log;
 
 public class DetailActivity extends AppCompatActivity {
+    private final static String TAG="DetailActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        if (savedInstanceState==null){
+            Bundle args=new Bundle();
+            if(getIntent().getParcelableExtra("MOVIE")==null)
+                Log.v(TAG,"intent is null");
+            else
+                Log.v(TAG, "intent is not null");
+            args.putParcelable(DetailActivityFragment.MOVIE_DETAIL,
+                    (getIntent().getParcelableExtra("MOVIE")));
+            DetailActivityFragment fragment=new DetailActivityFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.details_container,fragment)
+                    .commit();
+        }
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().
-                    add(R.id.detail_container, new DetailActivityFragment()).commit();
+                    add(R.id.details_container, new DetailActivityFragment()).commit();
         }
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 

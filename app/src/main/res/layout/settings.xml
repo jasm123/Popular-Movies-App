@@ -8,7 +8,7 @@
     tools:context=".SettingsActivity">
 
     <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
+        android:id="@+id/settings_toolbar"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:background="?colorPrimary"

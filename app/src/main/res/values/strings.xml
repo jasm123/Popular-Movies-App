@@ -7,14 +7,21 @@
     <string name="pref_general_title">Sort By</string>
     <string name="pref_general_key">sort_by</string>
     <string name="about">About</string>
+    <string name="trailer">Trailers: </string>
+    <string name="review">Reviews: </string>
+    <string name="read_more">Read more...</string>
+    <string name="rating">Rating:      </string>
     <string-array name="pref_general_entries">
         <item>Popularity</item>
         <item>Rating</item>
+        <item>Favorites</item>
     </string-array>
     <string-array name="pref_general_entryValues">
         <item>popularity</item>
         <item>vote_average</item>
+        <item>favorites</item>
     </string-array>
     <string name="popularity">popularity</string>
+    <string name="favorites">favorites</string>
     <string name="pref_general_summary">Sort the movies by choosing a category</string>
 </resources>

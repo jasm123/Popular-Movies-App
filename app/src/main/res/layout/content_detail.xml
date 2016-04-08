@@ -3,10 +3,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/detail_container"
-    android:name="com.example.user.spotifystreamer.DetailActivityFragment"
+    android:id="@+id/details_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".DetailActivity"
     tools:ignore="MergeRootFrame"/>
-<!--tools:layout="@layout/fragment_detail"-->

@@ -1,5 +1,7 @@
 package com.example.user.spotifystreamer;
 
+import android.annotation.TargetApi;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
@@ -8,26 +10,64 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 
 /**
  * Class defining settings//add toolbar
  */
 public class SettingsActivity extends PreferenceActivity implements
         Preference.OnPreferenceChangeListener {
-    public void onCreate(Bundle savedInstanceState){
+    public static final String TAG = "jinal";
+
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.v(TAG, "onCreate  s");
         addPreferencesFromResource(R.xml.pref_general);
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_general_key)));
     }
 
+    public void onStart() {
+        super.onStart();
+        Log.v(TAG, "onStart    s");
+    }
+
     @Override
-    public void onPostCreate(Bundle savedInstanceState){
+    public void onPause() {
+        super.onPause();
+        Log.v(TAG, "onPause   s");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.v(TAG, "onStop   s");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.v(TAG, "onDestroy   s");
+    }
+
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.v(TAG, "onSaveInstanceState   s");
+    }
+
+    public void onResume() {
+        super.onResume();
+        Log.v(TAG, "onResume    s");
+    }
+
+    @Override
+    public void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         AppBarLayout bar;
 
@@ -37,7 +77,7 @@ public class SettingsActivity extends PreferenceActivity implements
             root.addView(bar, 0);
         } else {
             ViewGroup root = (ViewGroup) findViewById(android.R.id.content);
-            ListView content = (ListView) root.getChildAt(0);
+            LinearLayout content = (LinearLayout) root.getChildAt(0);
             root.removeAllViews();
             bar = (AppBarLayout) LayoutInflater.from(this).inflate(R.layout.settings, root, false);
 
@@ -45,7 +85,7 @@ public class SettingsActivity extends PreferenceActivity implements
             TypedValue tv = new TypedValue();
             if (getTheme().resolveAttribute(R.attr.actionBarSize, tv, true)) {
                 height = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
-            }else{
+            } else {
                 height = bar.getHeight();
             }
 
@@ -62,8 +102,8 @@ public class SettingsActivity extends PreferenceActivity implements
                 finish();
             }
         });
-
     }
+
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         String stringValue = newValue.toString();
@@ -82,6 +122,7 @@ public class SettingsActivity extends PreferenceActivity implements
         }
         return true;
     }
+
     private void bindPreferenceSummaryToValue(Preference preference) {
         // Set the listener to watch for value changes.
         preference.setOnPreferenceChangeListener(this);
@@ -92,5 +133,11 @@ public class SettingsActivity extends PreferenceActivity implements
                 PreferenceManager
                         .getDefaultSharedPreferences(preference.getContext())
                         .getString(preference.getKey(), ""));
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    @Override
+    public Intent getParentActivityIntent(){
+        return super.getParentActivityIntent().addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
     }
 }
